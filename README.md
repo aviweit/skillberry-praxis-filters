@@ -22,6 +22,20 @@ skillberry-praxis-filters = { git = "https://github.com/skillberry-ai/skillberry
 
 The Praxis build system auto-discovers external filter crates via the `[package.metadata.praxis-filters]` marker and registers them at compile time.
 
+### Building Praxis
+
+```console
+cargo build --package praxis
+```
+
+### Rebuilding after filter updates
+
+Cargo caches git dependencies. When this repo changes, force a re-fetch before rebuilding:
+
+```console
+cargo update && cargo build --package praxis
+```
+
 ## Filter Chain
 
 These filters are designed to work together in sequence:
