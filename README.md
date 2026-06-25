@@ -17,7 +17,7 @@ Add this crate as a dependency of the Praxis server:
 
 ```toml
 [dependencies]
-skillberry-praxis-filters = { git = "https://github.com/skillberry/skillberry-praxis-filters.git" }
+skillberry-praxis-filters = { git = "https://github.com/skillberry-ai/skillberry-praxis-filters.git", branch = "phase-0" }
 ```
 
 The Praxis build system auto-discovers external filter crates via the `[package.metadata.praxis-filters]` marker and registers them at compile time.
