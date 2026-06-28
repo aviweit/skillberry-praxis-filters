@@ -50,26 +50,25 @@ skillberry-praxis-filters = { workspace = true }
 ### 3. Build Praxis
 
 ```console
-cargo build --package praxis-proxy
-```
-
-> Use `--release` instead for a production deployment. Debug builds compile faster and are easier to troubleshoot during development.
-
-Force a re-fetch when this repo changes:
-
-```console
 cargo update && cargo build --package praxis-proxy
 ```
 
+> Use `--release` instead for a production deployment.
+
 ### 4. Run Skillberry services
 
-The filter chain calls the Skillberry Store API to resolve skills and manage VMCP servers. Ensure `skillberry-store` is running and reachable at the URL configured in `pipeline/skillberry.yaml` (default: `http://localhost:8000`).
+The filter chain calls the Skillberry Store API to resolve skills and manage VMCP servers. Ensure [`skillberry-store`](https://github.com/skillberry-ai/skillberry-store) is running and reachable at the URL configured in `pipeline/skillberry.yaml` (default: `http://localhost:8000`).
 
 ### 5. Run Praxis with the pipeline config
 
+Set at minimum a skill name or UUID, then start the server:
+
 ```console
+export SKILL_NAME="my-skill-name"  # replace with a skill loaded into the store
 ./target/debug/praxis -c /path/to/skillberry-praxis-filters/pipeline/skillberry.yaml
 ```
+
+See [Environment Variables](#environment-variables) for the full list of tuneable settings.
 
 Validate config without starting the server:
 
@@ -92,7 +91,6 @@ export OPENAI_API_KEY=<your-key>
 python pipeline/emulate_client.py
 ```
 
-See [Environment Variables](#environment-variables) for all tuneable settings.
 
 ## Environment Variables
 
@@ -100,7 +98,6 @@ See [Environment Variables](#environment-variables) for all tuneable settings.
 |---------|---------|--------|-------------|
 | `SKILL_UUID` | — | `skill_resolver` | Direct skill UUID (highest priority) |
 | `SKILL_NAME` | — | `skill_resolver` | Skill name resolved via store API (priority 2) |
-| `MCP_PROMPTS_POSITION` | `postfix` | `mcp_tools_enricher` | Where MCP system prompts are inserted relative to existing system messages: `prefix` (before first) or `postfix` (after last) |
 
 ## Pipeline Folder
 
@@ -170,7 +167,6 @@ filter_chains:
         tool_choice: auto
         max_body_bytes: 10485760
         on_invalid: continue
-        prompts_position_env: "MCP_PROMPTS_POSITION"
 
       - filter: router
         routes:
