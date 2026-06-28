@@ -19,7 +19,7 @@ Add this crate as a dependency of the Praxis server:
 
 ```toml
 [dependencies]
-skillberry-praxis-filters = { git = "https://github.com/skillberry-ai/skillberry-praxis-filters.git", branch = "phase-0" }
+skillberry-praxis-filters = { git = "https://github.com/skillberry-ai/skillberry-praxis-filters.git", branch = "main" }
 ```
 
 The Praxis build system auto-discovers external filter crates via the `[package.metadata.praxis-filters]` marker and registers them at compile time.
@@ -28,6 +28,27 @@ The Praxis build system auto-discovers external filter crates via the `[package.
 
 ```console
 cargo build --package praxis
+```
+
+### Running Praxis with a custom config
+
+The `praxis` binary lives in the Praxis workspace's `target/` directory. Run it
+directly from the `praxis` checkout:
+
+```console
+./target/debug/praxis -c /path/to/skillberry.yaml
+```
+
+Or use the release build after `cargo build --release`:
+
+```console
+./target/release/praxis -c /path/to/skillberry.yaml
+```
+
+To validate the config without starting the server:
+
+```console
+./target/debug/praxis -t -c /path/to/skillberry.yaml
 ```
 
 ### Rebuilding after filter updates
