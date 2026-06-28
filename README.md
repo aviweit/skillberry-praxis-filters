@@ -24,31 +24,41 @@ cd praxis && git checkout 0bc9534e922a8be313331dd9f317356e5097d109
 
 ### 2. Add this crate as a dependency
 
-Insert one line into the Praxis workspace `Cargo.toml`:
+Three edits inside the Praxis checkout are required:
+
+**`Cargo.toml`** (workspace root) — declare the dependency:
 
 ```toml
 [workspace.dependencies]
 skillberry-praxis-filters = { git = "https://github.com/skillberry-ai/skillberry-praxis-filters.git", branch = "main" }
 ```
 
-The Praxis build system auto-discovers external filter crates via the `[package.metadata.praxis-filters]` marker and registers them at compile time — no other source changes are needed inside the Praxis repo.
+**`Cargo.toml`** (workspace root, bottom) — patch `praxis-proxy-filter` to use the local path so both this crate and Praxis resolve to the same copy (without this the build fails with a type mismatch):
+
+```toml
+[patch."https://github.com/praxis-proxy/praxis.git"]
+praxis-proxy-filter = { path = "filter" }
+```
+
+**`server/Cargo.toml`** — add it to the server crate's `[dependencies]` so it is compiled in:
+
+```toml
+[dependencies]
+skillberry-praxis-filters = { workspace = true }
+```
 
 ### 3. Build Praxis
 
 ```console
-cargo build --package praxis
+cargo build --package praxis-proxy
 ```
 
-Release build:
-
-```console
-cargo build --release --package praxis
-```
+> Use `--release` instead for a production deployment. Debug builds compile faster and are easier to troubleshoot during development.
 
 Force a re-fetch when this repo changes:
 
 ```console
-cargo update && cargo build --package praxis
+cargo update && cargo build --package praxis-proxy
 ```
 
 ### 4. Run Skillberry services
@@ -68,6 +78,14 @@ Validate config without starting the server:
 ```
 
 ### 6. Run the client emulation script
+
+Install the required dependency:
+
+```console
+pip install litellm
+```
+
+Then run:
 
 ```console
 export OPENAI_API_KEY=<your-key>
@@ -163,7 +181,7 @@ filter_chains:
         clusters:
           - name: llm_backend
             endpoints:
-              - "localhost:4000"
+                - "localhost:4000"  # replace with your LiteLLM / OpenAI-compatible proxy address
             connection_timeout_ms: 5000
             read_timeout_ms: 60000
             write_timeout_ms: 60000
