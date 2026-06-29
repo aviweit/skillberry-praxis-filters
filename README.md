@@ -89,13 +89,16 @@ cargo update && cargo build --package praxis-proxy
 
 ### 2. Start the Skillberry Worker
 
-Open new terminal
+Open a new terminal:
 
 ```console
-cd ~/skillberry-praxis-filters/worker
-pip install -e .
-uvicorn worker.main:app --host 0.0.0.0 --port 8001
+cd ~/skillberry-praxis-filters
+.venv/bin/pip install -e worker/
+.venv/bin/uvicorn worker.main:app --host 0.0.0.0 --port 8001 --reload
 ```
+
+> Run from the repo root — `worker.main` must be importable as a package from there.
+> Use the repo root `.venv`, not `worker/.venv`.
 
 ### 3. Start Praxis
 

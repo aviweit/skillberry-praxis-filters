@@ -7,9 +7,11 @@ session endpoints. No provider credentials, no config UI, no llm-switchboard.
 
 ### 1. Install dependencies
 
+From the **repo root** (not from inside `worker/`):
+
 ```bash
-cd worker
-pip install -e .
+cd ~/skillberry-praxis-filters
+.venv/bin/pip install -e worker/
 ```
 
 ### 2. Set worker env vars
@@ -22,15 +24,14 @@ export WORKER_PORT="8001"
 
 ### 3. Start the worker
 
-```bash
-uvicorn worker.main:app --host 0.0.0.0 --port 8001 --reload
-```
-
-Or via the package entry point:
+From the **repo root**:
 
 ```bash
-skillberry-worker
+.venv/bin/uvicorn worker.main:app --host 0.0.0.0 --port 8001 --reload
 ```
+
+> `worker.main` must be importable as a package from the repo root.
+> Do not run from inside the `worker/` directory.
 
 ### 4. Verify
 
