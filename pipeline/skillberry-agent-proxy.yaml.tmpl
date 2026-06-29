@@ -1,0 +1,193 @@
+# Skillberry Agent Proxy — Praxis pipeline template
+#
+# This file is a template. Deploy with:
+#   envsubst < pipeline/skillberry-agent-proxy.yaml.tmpl \
+#             > pipeline/skillberry-agent-proxy.yaml
+#   praxis --config pipeline/skillberry-agent-proxy.yaml
+#
+# Praxis environment variables consumed by this template
+# -------------------------------------------------------
+# Agent configuration (injected as headers into worker requests):
+#   SKILL_UUID                  Direct skill UUID (optional)
+#   SKILL_NAME                  Skill name to resolve (optional)
+#   ENABLE_THINK_LOGS           default: false
+#   USE_AGENT_TOOLS             default: true
+#   USE_AGENT_PROMPTS           default: true
+#   MCP_PROMPTS_POSITION        default: postfix
+#   REACT_RECURSION_LIMIT       default: 20
+#   SKILLBERRY_TOOLS_URL        default: http://127.0.0.1:8000
+#
+# LLM provider credentials (used by credential_injection on llm-egress):
+#   RITS_API_KEY / OPENAI_API_KEY / LITELLM_MASTER_KEY  (set as needed)
+
+listeners:
+  # ── Port 8080 — client-ingress (public) ────────────────────────────────────
+  # Receives external client requests. Applies security, injects agent config
+  # as headers, then routes to the Skillberry Worker.
+  - name: client-ingress
+    address: "0.0.0.0:8080"
+    filter_chains:
+      - client-ingress-chain
+
+  # ── Port 8081 — llm-egress (loopback only) ─────────────────────────────────
+  # Receives LLM calls from the worker. Applies model routing, rewriting, and
+  # credential injection. Never reachable from outside the host.
+  - name: llm-egress
+    address: "127.0.0.1:8081"
+    filter_chains:
+      - llm-routing-chain
+
+filter_chains:
+
+  # ── client-ingress-chain ────────────────────────────────────────────────────
+  - name: client-ingress-chain
+    filters:
+
+      # Step 1: Extract Skillberry context headers into filter metadata
+      - filter: context_extractor
+        headers:
+          - name: x-skillberry-context-env-id
+            metadata_key: env_id
+            default: "default-env"
+            required: true
+            pattern: "^[a-zA-Z0-9_-]+$"
+            max_length: 64
+          - name: x-skillberry-context-user-id
+            metadata_key: user_id
+            default: "anonymous"
+            required: false
+            pattern: "^[a-zA-Z0-9_-]+$"
+            max_length: 64
+          - name: x-skillberry-context-session-id
+            metadata_key: session_id
+            required: false
+            pattern: "^[a-zA-Z0-9_-]+$"
+            max_length: 128
+
+      # Step 2: Inject agent configuration as request headers.
+      # Values are expanded from Praxis env vars at deploy time via envsubst.
+      # request_set always overwrites — client cannot influence these values.
+      # These headers are only present on the client-ingress → worker leg;
+      # the llm-egress listener never sees them.
+      - filter: headers
+        request_set:
+          - name: x-skillberry-skill-uuid
+            value: "${SKILL_UUID}"
+          - name: x-skillberry-skill-name
+            value: "${SKILL_NAME}"
+          - name: x-skillberry-enable-think-logs
+            value: "${ENABLE_THINK_LOGS:-false}"
+          - name: x-skillberry-use-agent-tools
+            value: "${USE_AGENT_TOOLS:-true}"
+          - name: x-skillberry-use-agent-prompts
+            value: "${USE_AGENT_PROMPTS:-true}"
+          - name: x-skillberry-mcp-prompts-position
+            value: "${MCP_PROMPTS_POSITION:-postfix}"
+          - name: x-skillberry-react-recursion-limit
+            value: "${REACT_RECURSION_LIMIT:-20}"
+          - name: x-skillberry-tools-url
+            value: "${SKILLBERRY_TOOLS_URL:-http://127.0.0.1:8000}"
+
+      # Step 3: Route to the Skillberry Worker
+      - filter: router
+        routes:
+          - path_prefix: /
+            cluster: skillberry-worker
+
+      - filter: load_balancer
+        clusters:
+          - name: skillberry-worker
+            endpoints:
+              - "127.0.0.1:8001"
+            connection_timeout_ms: 5000
+            read_timeout_ms: 120000
+            write_timeout_ms: 30000
+
+  # ── llm-routing-chain ───────────────────────────────────────────────────────
+  - name: llm-routing-chain
+    filters:
+
+      # Extract model name into X-Model header for routing decisions
+      - filter: model_to_header
+        header: X-Model
+
+      # Rewrite LiteLLM SDK wire-format prefixes to provider-specific model names
+      - filter: openai_responses_model_rewrite
+        model_aliases:
+          "openai/gpt-oss-*":  "hosted_vllm/gpt-oss-${1}"
+          "openai/granite-*":  "hosted_vllm/granite-${1}"
+          "openai/gpt-*":      "gpt-${1}"
+          "openai/o1-*":       "o1-${1}"
+          "granite-*":         "hosted_vllm/granite-${1}"
+
+      # Route by rewritten model name
+      - filter: router
+        routes:
+          - headers:
+              X-Model: "hosted_vllm/*"
+            cluster: rits-backend
+          - headers:
+              X-Model: "gpt-*"
+            cluster: openai-backend
+          - headers:
+              X-Model: "o1-*"
+            cluster: openai-backend
+          - headers:
+              X-Model: "claude-*"
+            cluster: anthropic-backend
+          - headers:
+              X-Model: "ollama/*"
+            cluster: ollama-backend
+          - path_prefix: /
+            cluster: rits-backend   # default fallback
+
+      # Inject provider credentials (reads from Praxis env vars at runtime)
+      - filter: credential_injection
+        clusters:
+          - name: rits-backend
+            header: Authorization
+            env_var: RITS_API_KEY
+            header_prefix: "Bearer "
+          - name: rits-backend
+            header: RITS-API-Key
+            env_var: RITS_API_KEY
+          - name: openai-backend
+            header: Authorization
+            env_var: OPENAI_API_KEY
+            header_prefix: "Bearer "
+          - name: anthropic-backend
+            header: X-API-Key
+            env_var: ANTHROPIC_API_KEY
+          - name: litellm-proxy
+            header: Authorization
+            env_var: LITELLM_MASTER_KEY
+            header_prefix: "Bearer "
+          # ollama-backend intentionally omitted — no credentials needed
+
+      - filter: load_balancer
+        clusters:
+          - name: rits-backend
+            endpoints:
+              - "rits.fmaas.res.ibm.com:443"
+            tls: {}
+          - name: openai-backend
+            endpoints:
+              - "api.openai.com:443"
+            tls: {}
+          - name: anthropic-backend
+            endpoints:
+              - "api.anthropic.com:443"
+            tls: {}
+          - name: ollama-backend
+            endpoints:
+              - "localhost:11434"
+          - name: litellm-proxy
+            endpoints:
+              - "skillberry-1.vpc.cloud9.ibm.com:4000"
+
+      # Inject Praxis-Token-* headers on response for token usage aggregation
+      - filter: token_usage_headers
+
+runtime:
+  threads: 4
+  max_connections: 10000
