@@ -114,7 +114,7 @@ filter_chains:
         header: X-Model
 
       # Route all traffic to the LiteLLM proxy.
-      # Endpoint is set via SPAPRAXIS_LITELLMPROXY env var (host:port, e.g. skillberry-1.vpc.cloud9.ibm.com:4000).
+      # Endpoint is set via SPAPRAXIS_LITELLMPROXY env var (host:port, e.g. my-litellm-proxy.com:4000).
       - filter: router
         routes:
           - path_prefix: /
