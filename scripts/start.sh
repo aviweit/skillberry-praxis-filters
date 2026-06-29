@@ -40,4 +40,17 @@ if [[ "${1:-}" == "--config-only" ]]; then
     exit 0
 fi
 
-exec praxis --config "${CONF}"
+# Resolve praxis binary
+# Override by setting PRAXIS_ROOT or PRAXIS_BIN in your environment.
+PRAXIS_ROOT="${PRAXIS_ROOT:-${HOME}/praxis}"
+PRAXIS_BIN="${PRAXIS_BIN:-${PRAXIS_ROOT}/target/debug/praxis}"
+
+if [[ ! -x "${PRAXIS_BIN}" ]]; then
+    echo "ERROR: praxis binary not found at ${PRAXIS_BIN}"
+    echo "  Build it with:  cargo build --package praxis-proxy  (inside ${PRAXIS_ROOT})"
+    echo "  Or set PRAXIS_ROOT or PRAXIS_BIN to override."
+    exit 1
+fi
+
+echo "Using praxis: ${PRAXIS_BIN}"
+exec "${PRAXIS_BIN}" --config "${CONF}"

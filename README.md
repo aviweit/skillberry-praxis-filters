@@ -118,6 +118,27 @@ curl http://localhost:8080/health    # Praxis
 curl http://localhost:8001/health    # Worker
 ```
 
+### 5. Run the client emulator
+
+Install the dependency:
+
+```console
+pip install litellm
+```
+
+Set required env vars and run:
+
+```console
+export OPENAI_API_KEY=<your-key>
+export OPENAI_API_BASE=http://localhost:8080/v1   # default, can omit
+
+python pipeline/emulate_client.py
+```
+
+The script sends an OpenAI-compatible chat completion request through Praxis
+(port 8080) and prints the model's response. The `x-skillberry-env-id` header
+is generated automatically per run.
+
 ---
 
 ## Repository Layout

@@ -17,8 +17,10 @@
 #   REACT_RECURSION_LIMIT       default: 20
 #   SKILLBERRY_TOOLS_URL        default: http://127.0.0.1:8000
 #
-# LLM provider credentials (used by credential_injection on llm-egress):
-#   RITS_API_KEY / OPENAI_API_KEY / LITELLM_MASTER_KEY  (set as needed)
+# LLM provider credentials and routing (used by llm-egress):
+#   OPENAI_API_KEY          API key injected into every LLM request (Bearer token)
+#   SPAPRAXIS_LITELLMPROXY  LiteLLM proxy endpoint as host:port
+#                           e.g. my-litellm-proxy.com:4000
 
 listeners:
   # ── Port 8080 — client-ingress (public) ────────────────────────────────────
@@ -111,79 +113,27 @@ filter_chains:
       - filter: model_to_header
         header: X-Model
 
-      # Rewrite LiteLLM SDK wire-format prefixes to provider-specific model names
-      - filter: openai_responses_model_rewrite
-        model_aliases:
-          "openai/gpt-oss-*":  "hosted_vllm/gpt-oss-${1}"
-          "openai/granite-*":  "hosted_vllm/granite-${1}"
-          "openai/gpt-*":      "gpt-${1}"
-          "openai/o1-*":       "o1-${1}"
-          "granite-*":         "hosted_vllm/granite-${1}"
-
-      # Route by rewritten model name
+      # Route all traffic to the LiteLLM proxy.
+      # Endpoint is set via SPAPRAXIS_LITELLMPROXY env var (host:port, e.g. skillberry-1.vpc.cloud9.ibm.com:4000).
       - filter: router
         routes:
-          - headers:
-              X-Model: "hosted_vllm/*"
-            cluster: rits-backend
-          - headers:
-              X-Model: "gpt-*"
-            cluster: openai-backend
-          - headers:
-              X-Model: "o1-*"
-            cluster: openai-backend
-          - headers:
-              X-Model: "claude-*"
-            cluster: anthropic-backend
-          - headers:
-              X-Model: "ollama/*"
-            cluster: ollama-backend
           - path_prefix: /
-            cluster: rits-backend   # default fallback
+            cluster: litellm-proxy
 
-      # Inject provider credentials (reads from Praxis env vars at runtime)
+      # Inject API key from Praxis environment
       - filter: credential_injection
         clusters:
-          - name: rits-backend
-            header: Authorization
-            env_var: RITS_API_KEY
-            header_prefix: "Bearer "
-          - name: rits-backend
-            header: RITS-API-Key
-            env_var: RITS_API_KEY
-          - name: openai-backend
+          - name: litellm-proxy
             header: Authorization
             env_var: OPENAI_API_KEY
             header_prefix: "Bearer "
-          - name: anthropic-backend
-            header: X-API-Key
-            env_var: ANTHROPIC_API_KEY
-          - name: litellm-proxy
-            header: Authorization
-            env_var: LITELLM_MASTER_KEY
-            header_prefix: "Bearer "
-          # ollama-backend intentionally omitted — no credentials needed
 
+      # SPAPRAXIS_LITELLMPROXY must be host:port only (expanded at deploy time via envsubst)
       - filter: load_balancer
         clusters:
-          - name: rits-backend
-            endpoints:
-              - "rits.fmaas.res.ibm.com:443"
-            tls: {}
-          - name: openai-backend
-            endpoints:
-              - "api.openai.com:443"
-            tls: {}
-          - name: anthropic-backend
-            endpoints:
-              - "api.anthropic.com:443"
-            tls: {}
-          - name: ollama-backend
-            endpoints:
-              - "localhost:11434"
           - name: litellm-proxy
             endpoints:
-              - "skillberry-1.vpc.cloud9.ibm.com:4000"
+              - "${SPAPRAXIS_LITELLMPROXY}"
 
       # Inject Praxis-Token-* headers on response for token usage aggregation
       - filter: token_usage_headers
