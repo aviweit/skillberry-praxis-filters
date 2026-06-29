@@ -78,17 +78,17 @@ filter_chains:
           - name: x-skillberry-skill-name
             value: "${SKILL_NAME}"
           - name: x-skillberry-enable-think-logs
-            value: "${ENABLE_THINK_LOGS:-false}"
+            value: "${ENABLE_THINK_LOGS}"
           - name: x-skillberry-use-agent-tools
-            value: "${USE_AGENT_TOOLS:-true}"
+            value: "${USE_AGENT_TOOLS}"
           - name: x-skillberry-use-agent-prompts
-            value: "${USE_AGENT_PROMPTS:-true}"
+            value: "${USE_AGENT_PROMPTS}"
           - name: x-skillberry-mcp-prompts-position
-            value: "${MCP_PROMPTS_POSITION:-postfix}"
+            value: "${MCP_PROMPTS_POSITION}"
           - name: x-skillberry-react-recursion-limit
-            value: "${REACT_RECURSION_LIMIT:-20}"
+            value: "${REACT_RECURSION_LIMIT}"
           - name: x-skillberry-tools-url
-            value: "${SKILLBERRY_TOOLS_URL:-http://127.0.0.1:8000}"
+            value: "${SKILLBERRY_TOOLS_URL}"
 
       # Step 3: Route to the Skillberry Worker
       - filter: router

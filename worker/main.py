@@ -128,6 +128,15 @@ def _extract_skillberry_context(request: Request) -> dict:
     return ctx
 
 
+def _safe_int(value: Optional[str], default: int) -> int:
+    """Parse an integer header value, falling back to default on any error."""
+    try:
+        return int(value) if value is not None else default
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid integer header value '{value}', using default {default}")
+        return default
+
+
 def _extract_agent_config(request: Request) -> dict:
     """Read agent configuration from x-skillberry-* headers injected by Praxis.
 
@@ -143,7 +152,7 @@ def _extract_agent_config(request: Request) -> dict:
         "use_agent_tools":       h.get("x-skillberry-use-agent-tools", "true").lower() in ("true", "1", "yes"),
         "use_agent_prompts":     h.get("x-skillberry-use-agent-prompts", "true").lower() in ("true", "1", "yes"),
         "mcp_prompts_position":  h.get("x-skillberry-mcp-prompts-position", "postfix"),
-        "react_recursion_limit": int(h.get("x-skillberry-react-recursion-limit", "20")),
+        "react_recursion_limit": _safe_int(h.get("x-skillberry-react-recursion-limit"), 20),
         "tools_url":             h.get("x-skillberry-tools-url", "http://127.0.0.1:8000"),
     }
 
