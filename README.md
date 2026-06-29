@@ -89,8 +89,10 @@ cargo update && cargo build --package praxis-proxy
 
 ### 2. Start the Skillberry Worker
 
+Open new terminal
+
 ```console
-cd worker
+cd ~/skillberry-praxis-filters/worker
 pip install -e .
 uvicorn worker.main:app --host 0.0.0.0 --port 8001
 ```
@@ -99,7 +101,7 @@ uvicorn worker.main:app --host 0.0.0.0 --port 8001
 
 ```console
 export SKILL_NAME="my-skill"          # or SKILL_UUID=<uuid>
-export RITS_API_KEY="<your-key>"      # or OPENAI_API_KEY / LITELLM_MASTER_KEY
+export OPENAI_API_KEY="<your-key>"
 ./scripts/start.sh
 ```
 
