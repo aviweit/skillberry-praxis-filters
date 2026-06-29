@@ -102,6 +102,8 @@ cd ~/skillberry-praxis-filters
 
 ### 3. Start Praxis
 
+Open a new terminal:
+
 ```console
 export SKILL_NAME="my-skill"          # or SKILL_UUID=<uuid>
 export OPENAI_API_KEY="<your-key>"
