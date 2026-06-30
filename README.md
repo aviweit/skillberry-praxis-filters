@@ -58,6 +58,8 @@ See [`worker/README.md`](worker/README.md) for quick-start instructions.
 
 ## Quickstart
 
+❗Ensure that the [skillberry-store](https://github.com/skillberry-ai/skillberry-store) is running.
+
 ### 1. Build the Praxis filters
 
 Check out Praxis at the pinned commit:
@@ -95,6 +97,9 @@ cargo update && cargo build --package praxis-proxy
 
 ### 2. Start the Skillberry Worker
 
+Thin agentic shim behind Praxis. Owns the LangGraph ReAct loop and three
+session endpoints.
+
 Open a new terminal:
 
 ```console
@@ -112,6 +117,7 @@ Set required env vars and run:
 ```console
 export SKILL_NAME="my-skill"          # or SKILL_UUID=<uuid>
 export OPENAI_API_KEY="<your-key>"
+export SPAPRAXIS_LITELLMPROXY="<your-litellm-proxy>" # host:port
 ./scripts/start.sh
 ```
 
@@ -123,12 +129,18 @@ via `envsubst` and starts Praxis with the generated config.
 
 ### 4. Verify
 
+Open a new terminal:
+
 ```console
-curl http://localhost:7000/health    # Praxis
+curl http://localhost:7000/health    # Praxis-ingress
 curl http://localhost:8001/health    # Worker
 ```
 
 ### 5. Run the client emulator
+
+The script sends an OpenAI-compatible chat completion request through Praxis
+(port 7000) and prints the model's response. The `skillberry-context-env_id` (env_id)
+header is generated automatically per run.
 
 Install the dependency:
 
@@ -144,10 +156,6 @@ export OPENAI_API_BASE=http://localhost:7000/v1   # Praxis ingress
 
 python pipeline/emulate_client.py
 ```
-
-The script sends an OpenAI-compatible chat completion request through Praxis
-(port 7000) and prints the model's response. The `skillberry-context-env_id` (env_id)
-header is generated automatically per run.
 
 ---
 
