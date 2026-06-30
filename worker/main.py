@@ -28,7 +28,7 @@ x-skillberry-use-agent-tools        USE_AGENT_TOOLS         default: true
 x-skillberry-use-agent-prompts      USE_AGENT_PROMPTS       default: true
 x-skillberry-mcp-prompts-position   MCP_PROMPTS_POSITION    default: postfix
 x-skillberry-react-recursion-limit  REACT_RECURSION_LIMIT   default: 20
-x-skillberry-tools-url              SKILLBERRY_TOOLS_URL    default: http://127.0.0.1:8000
+x-skillberry-tools-url              SKILLBERRY_STORE_URL    default: http://127.0.0.1:8000
 """
 import json
 import logging
@@ -40,7 +40,6 @@ from typing import Any, Dict, List, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
