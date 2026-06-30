@@ -203,3 +203,11 @@ scripts/
 | `WORKER_LOG_LEVEL` | `INFO` | Log level |
 | `WORKER_LOG_FILE` | `/tmp/worker.log` | Log file path |
 | `WORKER_PORT` | `8001` | HTTP listen port |
+
+---
+
+## Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Running Tau2 Benchmarks with Praxis](docs/tau2-praxis-run.md) | End-to-end walkthrough for running the Tau2 airline benchmark suite with Praxis as the Skillberry agent gateway |
