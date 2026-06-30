@@ -2,7 +2,13 @@
 
 > ⚠️ **Work in Progress** — This repository is actively evolving. Features, APIs, and configuration may change at any time.
 
-Deployment layer that turns [Praxis](https://github.com/praxis-proxy/praxis) into the Skillberry agent gateway. It provides the Praxis pipeline configuration (listeners, filter chains, credential injection) and the Skillberry Worker — a lightweight Python service that runs the LangGraph ReAct loop. All LLM routing, provider credentials, and agent configuration are owned by Praxis; the worker contains no secrets and no provider-specific code. The worker is solely based on the [skillberry-agent library](https://github.com/skillberry-ai/skillberry-agent/tree/main/shared/python/skillberry_agent_lib).
+Deployment layer that turns [Praxis](https://github.com/praxis-proxy/praxis) into the Skillberry agent gateway.
+
+It provides the Praxis pipeline configuration (listeners, filter chains, credential injection) and the Skillberry Worker — a lightweight Python service that runs the LangGraph ReAct loop.
+
+All LLM routing, provider credentials, and agent configuration are owned by Praxis. 
+
+The worker contains no secrets and no provider-specific code and is solely based on the [skillberry-agent library](https://github.com/skillberry-ai/skillberry-agent/tree/main/shared/python/skillberry_agent_lib).
 
 
 ## How It Works
