@@ -45,7 +45,7 @@ filter_chains:
   - name: client-ingress-chain
     filters:
 
-      # Inject agent configuration as request headers.
+      # Step 1: Inject agent configuration as request headers.
       # Values are expanded from Praxis env vars at deploy time via envsubst.
       # request_set always overwrites — client cannot influence these values.
       # These headers are only present on the client-ingress → worker leg;
@@ -69,7 +69,7 @@ filter_chains:
           - name: x-skillberry-tools-url
             value: "${SKILLBERRY_TOOLS_URL}"
 
-      # Step 3: Route to the Skillberry Worker
+      # Step 2: Route to the Skillberry Worker
       - filter: router
         routes:
           - path_prefix: /
