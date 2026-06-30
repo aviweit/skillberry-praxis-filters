@@ -115,3 +115,8 @@ SPA=true make all
 
 `SPA=true` routes all agent calls through the Praxis Skillberry proxy agent on `http://localhost:7000/v1`.
 
+### Obtain trajectory results
+
+```console
+cd ~/skillberry-benchmarks/tau2
+make view view-results_tau2
