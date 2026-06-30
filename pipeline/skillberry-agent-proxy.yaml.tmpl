@@ -15,7 +15,7 @@
 #   USE_AGENT_PROMPTS           default: true
 #   MCP_PROMPTS_POSITION        default: postfix
 #   REACT_RECURSION_LIMIT       default: 20
-#   SKILLBERRY_TOOLS_URL        default: http://127.0.0.1:8000
+#   SKILLBERRY_STORE_URL        default: http://127.0.0.1:8000
 #
 # LLM provider credentials and routing (used by llm-egress):
 #   OPENAI_API_KEY          API key injected into every LLM request (Bearer token)
@@ -67,7 +67,7 @@ filter_chains:
           - name: x-skillberry-react-recursion-limit
             value: "${REACT_RECURSION_LIMIT}"
           - name: x-skillberry-tools-url
-            value: "${SKILLBERRY_TOOLS_URL}"
+            value: "${SKILLBERRY_STORE_URL}"
 
       # Step 2: Route to the Skillberry Worker
       - filter: router

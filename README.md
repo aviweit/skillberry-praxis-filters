@@ -2,9 +2,10 @@
 
 > ⚠️ **Work in Progress** — This repository is actively evolving. Features, APIs, and configuration may change at any time.
 
-External [Praxis](https://github.com/praxis-proxy/praxis) filters for the Skillberry ecosystem, plus the **Skillberry Worker** — the thin Python agentic service that sits behind Praxis.
+Deployment layer that turns [Praxis](https://github.com/praxis-proxy/praxis) into the Skillberry agent gateway. It provides the Praxis pipeline configuration (listeners, filter chains, credential injection) and the Skillberry Worker — a lightweight Python service that runs the LangGraph ReAct loop. All LLM routing, provider credentials, and agent configuration are owned by Praxis; the worker contains no secrets and no provider-specific code. The worker is solely based on the [skillberry-agent library](https://github.com/skillberry-ai/skillberry-agent/tree/main/shared/python/skillberry_agent_lib).
 
-## Architecture
+
+## How It Works
 
 ```
 Client
@@ -100,6 +101,8 @@ uvicorn worker.main:app --host 0.0.0.0 --port 8001 --reload
 
 Open a new terminal:
 
+Set required env vars and run:
+
 ```console
 export SKILL_NAME="my-skill"          # or SKILL_UUID=<uuid>
 export OPENAI_API_KEY="<your-key>"
@@ -131,13 +134,13 @@ Set required env vars and run:
 
 ```console
 export OPENAI_API_KEY=<your-key>
-export OPENAI_API_BASE=http://localhost:7000/v1   # default, can omit
+export OPENAI_API_BASE=http://localhost:7000/v1   # Praxis ingress
 
 python pipeline/emulate_client.py
 ```
 
 The script sends an OpenAI-compatible chat completion request through Praxis
-(port 7000) and prints the model's response. The `skillberry-context-env_id`
+(port 7000) and prints the model's response. The `skillberry-context-env_id` (env_id)
 header is generated automatically per run.
 
 ---
@@ -174,7 +177,7 @@ scripts/
 | `USE_AGENT_PROMPTS` | `true` | Pass system messages to ReAct loop |
 | `MCP_PROMPTS_POSITION` | `postfix` | MCP prompt injection position (`prefix`/`postfix`) |
 | `REACT_RECURSION_LIMIT` | `20` | LangGraph ReAct max iterations |
-| `SKILLBERRY_TOOLS_URL` | `http://127.0.0.1:8000` | Skillberry Tools Service URL |
+| `SKILLBERRY_STORE_URL` | `http://127.0.0.1:8000` | Skillberry Store Service URL |
 | `OPENAI_API_KEY` | — | API key injected into LLM requests |
 | `SPAPRAXIS_LITELLMPROXY` | — | LiteLLM proxy endpoint (`host:port`) |
 

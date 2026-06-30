@@ -56,16 +56,3 @@ by the worker. Praxis injects it as `x-skillberry-*` request headers via the
 `headers` filter in [`pipeline/skillberry-agent-proxy.yaml.tmpl`](../pipeline/skillberry-agent-proxy.yaml.tmpl).
 
 To start Praxis with the full pipeline, see [`scripts/start.sh`](../scripts/start.sh).
-
-## Running without Praxis (dev/test)
-
-Pass the headers directly with curl:
-
-```bash
-curl -X POST http://localhost:8001/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "x-skillberry-context-env-id: dev-env" \
-  -H "x-skillberry-skill-name: my-skill" \
-  -H "x-skillberry-react-recursion-limit: 5" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}], "temperature": 0.0}'
-```

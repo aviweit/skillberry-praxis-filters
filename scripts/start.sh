@@ -14,7 +14,7 @@
 #   USE_AGENT_PROMPTS                 — default: true
 #   MCP_PROMPTS_POSITION              — default: postfix
 #   REACT_RECURSION_LIMIT             — default: 20
-#   SKILLBERRY_TOOLS_URL              — default: http://127.0.0.1:8000
+#   SKILLBERRY_STORE_URL              — default: http://127.0.0.1:8000
 #   RITS_API_KEY / OPENAI_API_KEY / LITELLM_MASTER_KEY  — provider credentials
 #
 # Worker environment variables (the worker process reads these itself):
@@ -38,7 +38,7 @@ export USE_AGENT_TOOLS="${USE_AGENT_TOOLS:-true}"
 export USE_AGENT_PROMPTS="${USE_AGENT_PROMPTS:-true}"
 export MCP_PROMPTS_POSITION="${MCP_PROMPTS_POSITION:-postfix}"
 export REACT_RECURSION_LIMIT="${REACT_RECURSION_LIMIT:-20}"
-export SKILLBERRY_TOOLS_URL="${SKILLBERRY_TOOLS_URL:-http://127.0.0.1:8000}"
+export SKILLBERRY_STORE_URL="${SKILLBERRY_STORE_URL:-http://127.0.0.1:8000}"
 export SKILL_UUID="${SKILL_UUID:-}"
 export SKILL_NAME="${SKILL_NAME:-}"
 
