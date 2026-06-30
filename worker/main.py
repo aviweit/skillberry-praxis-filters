@@ -215,6 +215,7 @@ def _build_response(llm_response: Any, model: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 @app.post("/v1/chat/completions", tags=["chat"])
+@app.post("/chat/completions", tags=["chat"])
 def chat_completions(chat_request: ChatRequest, request: Request):
     logger.info(
         f"POST /v1/chat/completions model={chat_request.model} "
