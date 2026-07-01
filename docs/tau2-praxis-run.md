@@ -1,7 +1,7 @@
 # Running Tau2 Benchmarks with Praxis as the Skillberry Agent
 
 This guide walks through running [Tau2](https://github.com/sierra-research/tau2-bench) airline benchmarks
-using Praxis as the Skillberry agent gateway instead of the default FastAPI server.
+using Praxis as the Skillberry agent gateway.
 
 ---
 
