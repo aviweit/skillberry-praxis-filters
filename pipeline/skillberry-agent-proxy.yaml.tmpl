@@ -45,6 +45,8 @@ filter_chains:
   - name: client-ingress-chain
     filters:
 
+      - filter: access_log
+
       # Step 1: Inject agent configuration as request headers.
       # Values are expanded from Praxis env vars at deploy time via envsubst.
       # request_set always overwrites — client cannot influence these values.
@@ -87,6 +89,8 @@ filter_chains:
   # ── llm-routing-chain ───────────────────────────────────────────────────────
   - name: llm-routing-chain
     filters:
+
+      - filter: access_log
 
       # Extract model name into X-Model header for routing decisions
       - filter: model_to_header
